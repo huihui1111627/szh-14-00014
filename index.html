@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>深海通信电缆铺设联动仿真</title>
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <h1>深海通信电缆铺设联动仿真</h1>
+        <p>船体航迹 · 海流 · 海床坡度 · 放缆速度 · 缆线张力</p>
+      </div>
+      <div class="connection-panel">
+        <label class="switch">
+          <input id="connectionToggle" type="checkbox" checked>
+          <span>链路在线</span>
+        </label>
+        <span id="linkBadge" class="badge good">在线</span>
+      </div>
+    </header>
+
+    <section class="layout">
+      <section class="views">
+        <article class="card plan-card">
+          <div class="card-heading">
+            <div>
+              <h2>航迹与许可走廊</h2>
+              <p>俯视：船舶、触底点、未来落点、既有管线交叉</p>
+            </div>
+            <div class="legend">
+              <span><i class="swath corridor"></i>许可走廊</span>
+              <span><i class="swath cable"></i>电缆</span>
+              <span><i class="swath existing"></i>既有管线</span>
+              <span><i class="swath predict"></i>预测落点</span>
+            </div>
+          </div>
+          <canvas id="planCanvas"></canvas>
+        </article>
+
+        <article class="card profile-card">
+          <div class="card-heading">
+            <div>
+              <h2>船尾—触底点剖面</h2>
+              <p>侧视：悬空段、海床贴合、弯曲半径与张力包络</p>
+            </div>
+          </div>
+          <canvas id="profileCanvas"></canvas>
+        </article>
+      </section>
+
+      <aside class="sidebar">
+        <section class="card controls">
+          <h2>作业控制</h2>
+          <label>航速 <span id="speedLabel">1.55 m/s</span>
+            <input id="speedInput" type="range" min="0.4" max="3.2" step="0.05" value="1.55">
+          </label>
+          <label>转向速率 <span id="turnLabel">0.0°/min</span>
+            <input id="turnInput" type="range" min="-8" max="8" step="0.1" value="0">
+          </label>
+          <label>放缆比例 <span id="payoutLabel">1.00×</span>
+            <input id="payoutInput" type="range" min="0.70" max="1.22" step="0.01" value="1">
+          </label>
+
+          <div class="button-row">
+            <button id="playPauseBtn" type="button">暂停</button>
+            <button id="stepBtn" type="button">单步</button>
+            <button id="resetBtn" type="button">重置</button>
+          </div>
+          <label class="time-scale">仿真倍速 <span id="rateLabel">8×</span>
+            <input id="rateInput" type="range" min="1" max="20" step="1" value="8">
+          </label>
+        </section>
+
+        <section class="card status-card">
+          <h2>当前状态</h2>
+          <div id="statusGrid" class="status-grid"></div>
+        </section>
+
+        <section class="card strategy-card">
+          <h2>暂停节点 / 策略比较</h2>
+          <p class="hint">暂停时保存当前策略；调整参数后继续预测，可回到同一海况节点。</p>
+          <div class="button-row">
+            <button id="snapshotBtn" type="button">保存策略</button>
+            <button id="restoreBtn" type="button">回到节点</button>
+          </div>
+          <div id="strategyList" class="strategy-list"></div>
+        </section>
+
+        <section class="card command-card">
+          <h2>断线指令队列</h2>
+          <p id="queueHint" class="hint">在线指令立即生效；断线期间生成的指令会等待重连确认。</p>
+          <ul id="commandQueue" class="command-queue"></ul>
+        </section>
+      </aside>
+    </section>
+
+    <section class="card alerts-card">
+      <div class="card-heading">
+        <div>
+          <h2>风险与预计发生时间</h2>
+          <p>参数调整后立即重新计算未来 300 秒落点、悬空段和约束。</p>
+        </div>
+        <button id="reforecastBtn" type="button">重新预测</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>级别</th>
+              <th>类型</th>
+              <th>预计时间</th>
+              <th>位置（东向 / 北向，m）</th>
+              <th>读数</th>
+              <th>建议动作</th>
+            </tr>
+          </thead>
+          <tbody id="alertBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="commandDialog">
+    <form method="dialog">
+      <h2>重连：确认断线期间指令</h2>
+      <p>链路恢复。以下指令产生于断线期间，请选择明确确认或整体放弃。</p>
+      <ul id="dialogQueue" class="dialog-queue"></ul>
+      <menu>
+        <button value="discard" class="secondary">全部放弃</button>
+        <button value="confirm">确认并执行</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
