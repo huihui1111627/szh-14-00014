@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>深海通信电缆铺设联动仿真</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <div class="brand">🚢 深海电缆铺设联动仿真</div>
+    <div class="sim-state">
+      <span id="simClock">T+00:00</span>
+      <span id="connState" class="conn online">● 已连接</span>
+      <button id="btnPause" class="btn">⏸ 暂停</button>
+      <button id="btnDisconnect" class="btn ghost">模拟断线</button>
+      <span class="speed-mult">倍速
+        <select id="speedMult">
+          <option value="1">1×</option>
+          <option value="4">4×</option>
+          <option value="16">16×</option>
+          <option value="60">60×</option>
+        </select>
+      </span>
+    </div>
+  </header>
+
+  <main id="main">
+    <div id="views">
+      <div class="view-wrap plan-wrap">
+        <canvas id="planView"></canvas>
+        <div class="view-label">俯视：船体航迹 · 走廊 · 海流 · 既有管线 · 预测落点</div>
+      </div>
+      <div class="view-wrap profile-wrap">
+        <canvas id="profileView"></canvas>
+        <div class="view-label">剖面：船尾 → 悬空段 → 海床贴合（横轴为沿船首向距离）</div>
+      </div>
+    </div>
+
+    <aside id="sidebar">
+      <section class="panel" id="controlPanel">
+        <h3>作业控制</h3>
+        <label>航速 <span class="val" id="speedVal">0.80 m/s</span>
+          <input type="range" id="speedSlider" min="0" max="3" step="0.05" value="0.8" />
+        </label>
+        <label>放缆比例 <span class="val" id="payoutVal">100%</span>
+          <input type="range" id="payoutSlider" min="0.9" max="1.12" step="0.005" value="1.0" />
+        </label>
+        <div class="turn-row">
+          <label class="autopilot"><input type="checkbox" id="autopilotChk" checked /> 自动沿走廊航行</label>
+          <div id="manualTurn" class="manual-turn hidden">
+            <button class="btn small" data-turn="-0.04">↺ 左</button>
+            <input type="range" id="turnSlider" min="-0.08" max="0.08" step="0.005" value="0" />
+            <button class="btn small" data-turn="0.04">右 ↻</button>
+          </div>
+          <div id="autoNudge" class="auto-nudge">
+            <button class="btn small" data-nudge="-0.087">偏左 5°</button>
+            <button class="btn small" data-nudge="0">回正</button>
+            <button class="btn small" data-nudge="0.087">偏右 5°</button>
+          </div>
+        </div>
+        <div class="chips">
+          <button class="btn small warn" data-preset="risk">激进：2.5m/s·88%</button>
+          <button class="btn small ok" data-preset="safe">保守：0.6m/s·103%</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h3>实时遥测</h3>
+        <div id="telemetry" class="telemetry"></div>
+      </section>
+
+      <section class="panel">
+        <h3>风险预警 <label class="horizon">前瞻
+          <input type="range" id="horizonSlider" min="120" max="900" step="30" value="600" />
+          <span id="horizonVal">600s</span></label></h3>
+        <ul id="hazardList" class="hazard-list"></ul>
+      </section>
+
+      <section class="panel">
+        <h3>策略对比</h3>
+        <div class="scenario-actions">
+          <button id="btnFork" class="btn small">⑂ 从此节点分叉策略</button>
+          <button id="btnRemove" class="btn small ghost">删除当前</button>
+        </div>
+        <ul id="scenarioList" class="scenario-list"></ul>
+      </section>
+
+      <section class="panel">
+        <h3>指令日志</h3>
+        <ul id="cmdLog" class="cmd-log"></ul>
+      </section>
+    </aside>
+  </main>
+
+  <div id="reconnectModal" class="modal hidden">
+    <div class="modal-box">
+      <h2>🔌 链路已恢复</h2>
+      <p>断线期间以下指令尚未执行，海况在断线期间持续演化。请<strong>逐条确认或放弃</strong>：</p>
+      <ul id="pendingList" class="pending-list"></ul>
+      <div class="modal-actions">
+        <button id="btnConfirmAll" class="btn ok">全部确认</button>
+        <button id="btnDiscardAll" class="btn warn ghost">全部放弃</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
